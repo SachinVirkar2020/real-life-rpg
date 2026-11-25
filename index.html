@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#101522">
+<title>LIFE RPG</title>
+<link rel="manifest" href="manifest.webmanifest">
+<style>
+:root{--bg:#0b1020;--panel:#151d30;--panel2:#1c2940;--line:#2b3954;--text:#eef3ff;--muted:#9eacc5;--gold:#e9bd62;--green:#5bd39a;--purple:#b89aff;--red:#ff7b86}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at top,#1b2943 0,#0b1020 55%);color:var(--text);font:15px system-ui,-apple-system,Segoe UI,sans-serif;min-height:100vh}
+header{padding:22px 18px 12px;max-width:980px;margin:auto}h1{margin:0;font-size:27px;letter-spacing:.08em}header p{margin:5px 0;color:var(--muted)}
+main{max-width:980px;margin:auto;padding:8px 16px 100px}.panel{background:linear-gradient(145deg,#18243a,#111a2b);border:1px solid var(--line);border-radius:18px;padding:16px;margin:12px 0;box-shadow:0 10px 30px #0003}
+.row{display:flex;align-items:center;justify-content:space-between;gap:12px}.muted{color:var(--muted)}.small{font-size:12px;color:var(--muted)}.big{font-size:32px;font-weight:800;color:var(--gold)}.statgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}.stat{background:#10192a;border:1px solid var(--line);padding:12px;border-radius:13px}.stat strong{display:block;font-size:21px}.bar{height:10px;background:#0b1220;border-radius:99px;overflow:hidden;margin:9px 0}.bar span{display:block;height:100%;background:linear-gradient(90deg,#d89d45,#f6d889);width:0}
+nav{position:fixed;bottom:0;left:0;right:0;display:flex;justify-content:center;background:#0d1423ed;backdrop-filter:blur(12px);border-top:1px solid var(--line);padding:8px 4px calc(8px + env(safe-area-inset-bottom));z-index:5}nav button{background:none;border:0;color:var(--muted);font-size:11px;flex:1;padding:7px 2px}nav button.active{color:var(--gold)}nav b{display:block;font-size:18px;margin-bottom:2px}
+button,.btn{background:#263753;border:1px solid #3b5277;color:var(--text);border-radius:11px;padding:10px 13px;font-weight:650;cursor:pointer}button.primary{background:linear-gradient(120deg,#9d6a2d,#d9aa55);border:0;color:#1a1720}button:disabled{opacity:.45;cursor:not-allowed}
+.task{display:flex;align-items:center;gap:10px;padding:12px 0;border-bottom:1px solid #27344a}.task:last-child{border:0}.task input{width:20px;height:20px;accent-color:#d7a84f}.task .pts{margin-left:auto;color:var(--gold);font-weight:750;white-space:nowrap}.task.done .taskname{text-decoration:line-through;color:var(--muted)}
+.tabscreen{display:none}.tabscreen.active{display:block}.pill{border:1px solid var(--line);padding:5px 9px;border-radius:99px;color:var(--muted);font-size:12px}.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(145px,1fr));gap:10px}.reward{min-height:150px;border-radius:15px;padding:13px;border:1px solid #465475;background:linear-gradient(145deg,#263957,#17243b);display:flex;flex-direction:column;justify-content:space-between}.reward.anime{background:linear-gradient(145deg,#44345e,#211c3b);border-color:#69568b}.reward.used{opacity:.55;filter:grayscale(.65)}.reward .emoji{font-size:27px}.reward h3{font-size:14px;margin:8px 0}.reward button{margin-top:10px;width:100%;padding:8px}.field{display:block;width:100%;background:#0d1627;color:var(--text);border:1px solid var(--line);border-radius:10px;padding:11px;margin:6px 0 12px}.dayrow{display:grid;grid-template-columns:85px 1fr;gap:10px;align-items:center;margin:8px 0}.notice{padding:11px;border-radius:12px;background:#142a2a;border:1px solid #285448;color:#a9f0cb}.warning{background:#33291a;border-color:#72562c;color:#f3d79c}.hidden{display:none!important}
+@media(min-width:700px){main{padding-bottom:30px}nav{position:sticky;top:0;bottom:auto;max-width:980px;margin:auto;border:1px solid var(--line);border-radius:14px}header{padding-top:28px}}
+
+.modal-backdrop{position:fixed;inset:0;background:#050914d9;display:none;align-items:center;justify-content:center;padding:20px;z-index:20}
+.modal-backdrop.show{display:flex;animation:fadeIn .2s ease}
+.modal{width:min(420px,100%);background:linear-gradient(145deg,#263958,#121c30);border:1px solid #7186ad;border-radius:22px;padding:22px;text-align:center;box-shadow:0 0 50px #d9a84a44;animation:popIn .45s cubic-bezier(.2,1.5,.4,1)}
+.modal .burst{font-size:48px;animation:glow 1s infinite alternate}.modal h2{color:var(--gold);margin:8px 0}.modal p{color:#d3def0}.modal .loot{background:#101a2b;border:1px solid #536b91;border-radius:12px;padding:10px;margin:8px 0}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}@keyframes popIn{from{transform:scale(.65) translateY(25px);opacity:0}to{transform:scale(1);opacity:1}}@keyframes glow{from{filter:drop-shadow(0 0 3px #e9bd62);transform:scale(.95)}to{filter:drop-shadow(0 0 18px #e9bd62);transform:scale(1.08)}}
+.task-actions{display:flex;gap:6px;margin-left:auto}.task-actions button{padding:7px 9px;font-size:12px}.task-actions .donebtn{background:#24513f;border-color:#3a8b69}.task-actions .startbtn{background:#283d5c}.formgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.formgrid label{font-size:12px;color:var(--muted)}.formgrid .wide{grid-column:1/-1}@media(max-width:520px){.formgrid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<header><div class="row"><div><h1>⚔ LIFE RPG</h1><p>Turn real-life missions into character progression.</p></div><span class="pill" id="todayLabel"></span></div></header>
+<main>
+<section id="dashboard" class="tabscreen active">
+ <div class="panel">
+  <div class="row"><div><div class="small">CURRENT RANK</div><h2 id="rankName" style="margin:4px 0;color:var(--gold)">E</h2><div class="muted" id="rankGrade">Rank progression E → SSS</div></div><span class="pill" id="rankProgress">Rank E</span></div>
+  <div class="bar"><span id="rankBar"></span></div>
+  <div class="row"><div><div class="small">CURRENT LEVEL</div><h2 id="levelName" style="margin:4px 0;color:var(--purple)">Bronze</h2></div><span class="pill" id="levelProgress">Level 1 / 10</span></div>
+  <div class="bar"><span id="levelBar"></span></div>
+  <div style="margin-top:12px"><div class="small">TOTAL XP</div><div class="big" id="totalXp">0</div></div>
+  <div style="margin-top:12px"><div class="small">TODAY'S XP</div><div class="big" id="todayXp">0</div></div>
+ </div>
+ <div class="statgrid"><div class="stat"><span class="small">QUALIFICATION</span><strong id="qualify">0 / 350</strong></div><div class="stat"><span class="small">STREAK</span><strong id="streak">0 🔥</strong></div></div>
+ <div class="panel"><div class="row"><h2 style="margin:0">Today's missions</h2><span class="pill" id="dateFull"></span></div><p class="small">Choose one option within each grouped routine. Earn at least 350 XP to bank today's XP and unlock a daily reward package.</p><div id="taskList"></div><div class="row" style="margin-top:14px"><span class="muted">Daily total</span><strong class="big" id="dailyTotal">0 XP</strong></div><div class="bar"><span id="dailyBar"></span></div><div id="dailyMessage" class="notice">350 XP needed to qualify.</div></div>
+ <div class="panel"><h3>Reward milestones</h3><div class="small">Highest milestone reached wins; packages do not stack.</div><div id="milestoneSummary" style="margin-top:10px"></div></div>
+</section>
+<section id="inventory" class="tabscreen"><div class="panel"><div class="row"><h2 style="margin:0">🎁 Rewards</h2><span class="pill" id="availableCount">0 available</span></div><p class="small">Tap Open on a card when you actually use the reward. Opened cards move to Used.</p><div id="availableCards" class="cards"></div><h3 style="margin-top:24px">Used / exhausted</h3><div id="usedCards" class="cards"></div></div></section>
+<section id="tasks" class="tabscreen"><div class="panel"><h2>⚙ Task Configuration</h2><p class="small">Create tasks with XP and an active date range. Tasks outside their dates are hidden from Today's missions and shown under Expired / Scheduled.</p>
+<form id="taskForm"><input type="hidden" id="taskEditId"><div class="formgrid">
+<label class="wide">Task name<input class="field" id="taskName" required placeholder="e.g. Evening walk"></label>
+<label>XP reward<input class="field" id="taskXp" type="number" min="1" max="10000" required value="50"></label>
+<label>Group (optional)<input class="field" id="taskGroup" placeholder="e.g. gym"></label>
+<label>Start date<input class="field" id="taskStart" type="date" required></label>
+<label>Expiry date<input class="field" id="taskExpiry" type="date"></label>
+</div><div class="row"><button class="primary" type="submit" id="taskSaveBtn">Add task</button><button type="button" id="taskCancel">Clear</button></div></form></div>
+<div class="panel"><h3>Configured tasks</h3><div id="configuredTasks"></div></div>
+<div class="panel"><h3>Scheduled / Expired tasks</h3><div id="inactiveTasks"></div></div></section>
+<section id="ranks" class="tabscreen"><div class="panel"><h2>🏆 Rank ladder</h2><p class="small">Each earned Level Up advances one step. Ten level-ups complete each rank tier.</p><div id="rankLadder"></div><h3>Monarch grades</h3><p class="small">Monarch level-ups advance E → D → C → B → A → S, with +10 reaching SSS.</p><div id="monarchGrade"></div></div></section>
+<section id="anime" class="tabscreen"><div class="panel"><h2>📺 Rewards Config</h2><p class="small">Configure anime rewards, the XP milestone, episode quantity, and the anime assigned to each weekday.</p><div class="panel" style="margin:12px 0"><h3>Rewards Config</h3><label><input type="checkbox" id="animeRewardEnabled" checked> Enable anime episode rewards</label><div class="formgrid"><label>Unlock milestone<select class="field" id="animeMilestone"><option value="450">450 XP</option><option value="500">500 XP</option></select></label><label>Episode cards<input class="field" id="animeEpisodes" type="number" min="1" max="10" value="1"></label></div></div><div id="animeSchedule"></div><button class="primary" id="saveAnime">Save Rewards Config</button><p class="small">Same anime on multiple days creates separate episode cards.</p></div></section>
+<section id="history" class="tabscreen"><div class="panel"><h2>📜 Progress history</h2><div id="historyList"></div><div class="row" style="margin-top:16px"><button id="exportData">Export backup</button><button id="resetDay">Reset today's tasks</button></div><p class="small">Your progress is saved on this device in this browser. Export a backup regularly.</p></div></section>
+</main>
+<div class="modal-backdrop" id="rpgModal"><div class="modal"><div class="burst" id="modalIcon">⚔️</div><h2 id="modalTitle">Quest started!</h2><p id="modalBody"></p><div id="modalLoot"></div><button class="primary" id="modalClose">Continue</button></div></div>
+<nav>
+<button class="active" data-tab="dashboard"><b>⌂</b>Home</button><button data-tab="inventory"><b>🎁</b>Rewards</button><button data-tab="tasks"><b>⚙</b>Task Config</button><button data-tab="ranks"><b>🏆</b>Ranks</button><button data-tab="anime"><b>📺</b>Rewards Config</button><button data-tab="history"><b>☷</b>History</button>
+</nav>
+<script>
+const DAYS=["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"];
+const DEFAULT_ANIME=["Full Clearing Another World","The Laid-Off Cheat-Granting Mage","A Tale of the Secret Saint","The Exiled Heavy Knight","Dragon Ball Super: Beerus","Magic Repo Man","Overgeared"];
+const DEFAULT_TASKS=[
+{id:"wake",name:"4:30 AM – Wake up",xp:100},
+{id:"gym",name:"5:00 AM – Gym",xp:200,group:"gym"},
+{id:"cardio",name:"Gym + Cardio",xp:250,group:"gym"},
+{id:"skips",name:"Gym + Cardio + Skips",xp:300,group:"gym"},
+{id:"core",name:"Gym + Cardio + Skips + Core",xp:350,group:"gym"},
+{id:"login",name:"9:30 AM – Login",xp:20},
+{id:"logout7",name:"7:00 PM – Logout",xp:80,group:"logout"},
+{id:"logout8",name:"8:00 PM – Logout",xp:60,group:"logout"},
+{id:"automation",name:"8:00 PM – Automation practice",xp:200},
+{id:"sleep930",name:"9:30 PM – Sleep",xp:100,group:"sleep"},
+{id:"sleep10",name:"10:00 PM – Sleep",xp:60,group:"sleep"},
+{id:"ai",name:"10 AM–7 PM – AI-based testing implementation",xp:100}
+];
+const RANKS=["Bronze","Silver","Gold","Platinum","Diamond","Prime","Ace","Master","Legend","Monarch"];
+const PACKAGES={350:{game:1,level:0,anime:0},400:{game:1,level:1,anime:0},450:{game:1,level:1,anime:1},500:{game:2,level:1,anime:1}};
+const $=id=>document.getElementById(id);
+const dateKey=(d=new Date())=>{const y=d.getFullYear(),m=String(d.getMonth()+1).padStart(2,"0"),day=String(d.getDate()).padStart(2,"0");return `${y}-${m}-${day}`};
+const dayIndex=(d=new Date())=>(d.getDay()+6)%7;
+let state=JSON.parse(localStorage.getItem("lifeRpgSave")||"null")||{totalXp:0,totalLevelUps:0,rankLevelUps:0,monarchGrade:0,streak:0,lastQualified:null,days:{},cards:[],history:[],anime:[...DEFAULT_ANIME]};
+if(!state.tasks)state.tasks=DEFAULT_TASKS.map(t=>({...t,startDate:"2020-01-01",expiryDate:"",active:true}));
+if(!state.animeConfig)state.animeConfig={enabled:true,milestone:450,episodes:1};
+let TASKS=state.tasks;
+function taskIsActive(t,k=dateKey()){return t.active!==false && (!t.startDate||t.startDate<=k) && (!t.expiryDate||t.expiryDate>=k)}
+function activeTasks(){return TASKS.filter(t=>taskIsActive(t))}
+
+function save(){state.tasks=TASKS;localStorage.setItem("lifeRpgSave",JSON.stringify(state))}
+function day(){const k=dateKey();if(!state.days[k])state.days[k]={checked:[],statuses:{},issuedMilestone:0,bankedXp:0};const d=state.days[k];d.statuses=d.statuses||{};(d.checked||[]).forEach(id=>{if(!d.statuses[id])d.statuses[id]="done"});return d}
+function taskStatus(id){return day().statuses[id]||"pending"}
+function selected(id){return taskStatus(id)==="done"}
+function xpToday(){return TASKS.filter(t=>selected(t.id)).reduce((s,t)=>s+Number(t.xp||0),0)}
+function targetInfo(x){const targets=[{xp:350,name:"Game Reward"},{xp:400,name:"Game Reward + Level Up"},{xp:450,name:"Game Reward + Level Up + Anime Episode"},{xp:500,name:"2 Game Rewards + Level Up + Anime Episode"}];return targets.find(t=>x<t.xp)||targets[3]}
+function showModal(icon,title,body,loot=""){ $("modalIcon").textContent=icon;$("modalTitle").textContent=title;$("modalBody").textContent=body;$("modalLoot").innerHTML=loot;$("rpgModal").classList.add("show")}
+$("modalClose").onclick=()=>$("rpgModal").classList.remove("show");
+function addCard(type,title,dayKey){state.cards.unshift({id:crypto.randomUUID?crypto.randomUUID():String(Date.now()+Math.random()),type,title,day:dayKey,status:"available",created:new Date().toISOString()})}
+function packageFor(x){return x>=500?500:x>=450?450:x>=400?400:x>=350?350:0}
+function configuredPackage(p){const base={...(PACKAGES[p]||{game:0,level:0,anime:0})};base.anime=state.animeConfig.enabled&&p>=Number(state.animeConfig.milestone||450)?Number(state.animeConfig.episodes||1):0;return base}
+function issueOrUpgrade(){
+ const d=day(),x=xpToday(),p=packageFor(x),k=dateKey();
+ if(!p)return;
+ if(x>d.bankedXp){state.totalXp+=x-d.bankedXp;d.bankedXp=x;}
+ const previous=d.issuedMilestone?configuredPackage(d.issuedMilestone):{game:0,level:0,anime:0};
+ const current=configuredPackage(p);
+ for(let i=previous.game;i<current.game;i++)addCard("game","1 Game Session",k);
+ for(let i=previous.level;i<current.level;i++){state.totalLevelUps++;state.rankLevelUps++;if(state.rankLevelUps>=10){state.rankLevelUps=0;state.monarchGrade=Math.min(10,state.monarchGrade+1)}}
+ if(current.anime>previous.anime)addCard("anime",state.anime[dayIndex()]+" – Episode",k);
+ if(p>d.issuedMilestone)d.issuedMilestone=p;
+ const yesterday=new Date();yesterday.setDate(yesterday.getDate()-1);const yk=dateKey(yesterday);
+ if(state.lastQualified!==k){state.streak=state.lastQualified===yk?state.streak+1:1;state.lastQualified=k;}
+ const old=state.history.find(h=>h.date===k);
+ const entry={date:k,xp:d.bankedXp,milestone:d.issuedMilestone,game:current.game,level:current.level,anime:current.anime?state.anime[dayIndex()]:""};
+ if(old)Object.assign(old,entry);else state.history.unshift(entry);
+ save();
+}
+function render(){
+ const d=day(),x=xpToday(),p=packageFor(x),levelIdx=Math.min(9,state.totalLevelUps),rankIdx=Math.min(7,Math.max(0,state.totalLevelUps-10)),rankGrades=["E","D","C","B","A","S","SS","SSS"];
+ $("todayLabel").textContent=new Date().toLocaleDateString(undefined,{weekday:"short",month:"short",day:"numeric"});
+ $("dateFull").textContent=dateKey();$("totalXp").textContent=state.totalXp.toLocaleString();$("todayXp").textContent=x;$("dailyTotal").textContent=x+" XP";
+ $("qualify").textContent=Math.min(x,350)+" / 350";$("streak").textContent=state.streak+" 🔥";
+ $("rankName").textContent=rankGrades[rankIdx];$("rankGrade").textContent="Rank "+rankGrades[rankIdx]+" · E → SSS";
+ $("rankProgress").textContent="Rank "+rankGrades[rankIdx];$("levelName").textContent=RANKS[levelIdx];$("levelProgress").textContent="Level "+(levelIdx+1)+" / 10";
+ $("rankBar").style.width=(rankIdx/7*100)+"%";$("levelBar").style.width=(levelIdx/9*100)+"%";$("dailyBar").style.width=Math.min(100,x/5)+"%";
+ $("dailyMessage").className=d.issuedMilestone?"notice":"notice "+(x>=350?"":"warning");
+ $("dailyMessage").textContent=d.issuedMilestone?"Reward package auto-issued and upgraded at higher milestones. XP is banked permanently.":x>=350?"Daily target reached. Your reward package will be issued automatically.":`${350-x} more XP needed to qualify.`;
+ $("taskList").innerHTML=activeTasks().map(t=>{const st=taskStatus(t.id);return `<div class="task ${st==="done"?"done":""}"><div style="flex:1"><div class="taskname">${t.name}</div><div class="small">${st==="inprogress"?"IN PROGRESS":st==="done"?"COMPLETED":"NOT STARTED"}</div></div><span class="pts">+${t.xp} XP</span><div class="task-actions"><button class="startbtn" data-start="${t.id}" ${st!=="pending"?"disabled":""}>Start</button><button class="donebtn" data-done="${t.id}" ${st!=="inprogress"?"disabled":""}>Done</button></div></div>`}).join("");
+ $("milestoneSummary").innerHTML=[350,400,450,500].map(n=>`<div class="row" style="padding:7px 0;border-bottom:1px solid var(--line)"><span>${n} XP</span><span class="${p===n?"":"muted"}">${p===n?"✓ Current package":n<p?"Passed":"Locked"}</span></div>`).join("");
+ $("availableCards").innerHTML=cards("available");$("usedCards").innerHTML=cards("used");$("availableCount").textContent=state.cards.filter(c=>c.status==="available").length+" available";
+ $("rankLadder").innerHTML='<h3>Level tiers</h3>'+RANKS.map((r,i)=>`<div class="row" style="padding:10px 0;border-bottom:1px solid var(--line)"><span>${i+1}. ${r}</span><span class="pill">${i<levelIdx?"Completed":i===levelIdx?"Current":"Locked"}</span></div>`).join("")+'<h3 style="margin-top:22px">Rank grades</h3>'+rankGrades.map((r,i)=>`<div class="row" style="padding:10px 0;border-bottom:1px solid var(--line)"><span>${r}</span><span class="pill">${i<rankIdx?"Completed":i===rankIdx?"Current":"Locked"}</span></div>`).join("");
+ $("monarchGrade").textContent="Current rank: "+rankGrades[rankIdx]+" · "+Math.min(10,state.rankLevelUps||0)+"/10 Monarch level-ups toward next grade";
+ $("animeSchedule").innerHTML=DAYS.map((day,i)=>`<label class="dayrow"><strong>${day}</strong><input class="field" data-anime="${i}" value="${escapeHtml(state.anime[i]||"")}" /></label>`).join("");
+ $("animeRewardEnabled").checked=!!state.animeConfig.enabled;$("animeMilestone").value=String(state.animeConfig.milestone||450);$("animeEpisodes").value=String(state.animeConfig.episodes||1);
+ $("configuredTasks").innerHTML=TASKS.filter(t=>taskIsActive(t)).map(t=>`<div class="row" style="padding:9px 0;border-bottom:1px solid var(--line)"><div><strong>${escapeHtml(t.name)}</strong><div class="small">+${t.xp} XP · From ${t.startDate||"any date"}${t.expiryDate?" · Until "+t.expiryDate:""}</div></div><div class="task-actions"><button data-edit-task="${t.id}">Edit</button><button data-disable-task="${t.id}">Expire</button></div></div>`).join("")||'<p class="muted">No active tasks.</p>';
+ $("inactiveTasks").innerHTML=TASKS.filter(t=>!taskIsActive(t)).map(t=>`<div class="row" style="padding:8px 0"><div><strong>${escapeHtml(t.name)}</strong><div class="small">+${t.xp} XP · ${t.active===false?"Deactivated":t.startDate>dateKey()?"Starts "+t.startDate:"Expired "+(t.expiryDate||"")}</div></div><button data-reactivate-task="${t.id}">Reactivate</button></div>`).join("")||'<p class="muted">No scheduled or expired tasks.</p>';
+ $("historyList").innerHTML=state.history.length?state.history.map(h=>`<div class="row" style="padding:10px 0;border-bottom:1px solid var(--line)"><div><strong>${h.date}</strong><div class="small">${h.milestone} XP package${h.anime?" · "+escapeHtml(h.anime):""}</div></div><strong style="color:var(--gold)">+${h.xp} XP</strong></div>`).join(""):'<p class="muted">No qualifying days yet.</p>';
+}
+function escapeHtml(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
+function cards(status){const list=state.cards.filter(c=>c.status===status);if(!list.length)return '<p class="muted">No '+status+' cards yet.</p>';return list.map(c=>`<article class="reward ${c.type==="anime"?"anime":""} ${status==="used"?"used":""}"><div><div class="emoji">${c.type==="game"?"🎮":"📺"}</div><h3>${escapeHtml(c.title)}</h3><div class="small">${c.day}</div></div>${status==="available"?`<button data-open="${c.id}">Open / Mark used</button>`:'<span class="pill">USED</span>'}</article>`).join("")}
+$("taskList").addEventListener("click",e=>{
+ const startId=e.target.dataset.start,doneId=e.target.dataset.done,d=day();
+ if(startId){
+  const t=TASKS.find(x=>x.id===startId);if(!t||taskStatus(startId)!=="pending")return;
+  d.statuses[startId]="inprogress";save();render();
+  const target=targetInfo(xpToday());
+  showModal("⚔️","QUEST STARTED",`This quest is worth ${t.xp} XP. Complete it to add XP to today's total. Next target: ${target.xp} XP – ${target.name}.`,`<div class="loot">Potential reward: +${t.xp} XP</div>`);
+  return;
+ }
+ if(doneId){
+  const t=TASKS.find(x=>x.id===doneId);if(!t||taskStatus(doneId)!=="inprogress")return;
+  if(t.group){TASKS.filter(q=>q.group===t.group&&q.id!==doneId).forEach(q=>{if(taskStatus(q.id)!=="done")delete d.statuses[q.id]})}
+  d.statuses[doneId]="done";
+  if(!d.checked.includes(doneId))d.checked.push(doneId);
+  const before=d.issuedMilestone||0;
+  issueOrUpgrade();save();render();
+  const after=day().issuedMilestone||0,now=xpToday();
+  if(after>before){
+   const pkg=PACKAGES[after],loot=[];
+   for(let i=0;i<pkg.game;i++)loot.push("🎮 Game Reward Card");
+   for(let i=0;i<pkg.level;i++)loot.push("⬆️ Level Up");
+   if(pkg.anime)loot.push("📺 "+state.anime[dayIndex()]+" – Episode");
+   showModal("🏆","REWARD UNLOCKED!",`You reached ${after} XP! Your ${after} XP milestone reward is unlocked.`,loot.map(x=>`<div class="loot">${x}</div>`).join(""));
+  }else{
+   const next=targetInfo(now),remaining=Math.max(0,next.xp-now);
+   showModal("✨","QUEST COMPLETED",`+${t.xp} XP achieved. ${remaining} more XP to the ${next.xp} XP target: ${next.name}.`,`<div class="loot">Today's XP: ${now} XP</div><div class="loot">Next reward: ${next.name}</div>`);
+  }
+ }
+});
+function clearTaskForm(){ $("taskEditId").value="";$("taskName").value="";$("taskXp").value="50";$("taskGroup").value="";$("taskStart").value=dateKey();$("taskExpiry").value="";$("taskSaveBtn").textContent="Add task"; }
+$("taskStart").value=dateKey();
+$("taskForm").addEventListener("submit",e=>{e.preventDefault();const id=$("taskEditId").value||("custom_"+Date.now());const obj={id,name:$("taskName").value.trim(),xp:Number($("taskXp").value),group:$("taskGroup").value.trim()||undefined,startDate:$("taskStart").value,expiryDate:$("taskExpiry").value,active:true};if(!obj.name||obj.xp<1)return;const ix=TASKS.findIndex(t=>t.id===id);if(ix>=0)TASKS[ix]={...TASKS[ix],...obj};else TASKS.push(obj);state.tasks=TASKS;save();clearTaskForm();render();});
+$("taskCancel").onclick=clearTaskForm;
+$("configuredTasks").addEventListener("click",e=>{const id=e.target.dataset.editTask||e.target.dataset.disableTask;if(!id)return;const t=TASKS.find(x=>x.id===id);if(!t)return;if(e.target.dataset.disableTask){t.active=false;}else{$("taskEditId").value=t.id;$("taskName").value=t.name;$("taskXp").value=t.xp;$("taskGroup").value=t.group||"";$("taskStart").value=t.startDate||dateKey();$("taskExpiry").value=t.expiryDate||"";$("taskSaveBtn").textContent="Save changes";document.querySelector('[data-tab="tasks"]').scrollIntoView({behavior:"smooth"});}state.tasks=TASKS;save();render();});
+$("inactiveTasks").addEventListener("click",e=>{const id=e.target.dataset.reactivateTask;if(!id)return;const t=TASKS.find(x=>x.id===id);if(t){t.active=true;t.startDate=dateKey();t.expiryDate="";save();render();}});
+$("availableCards").addEventListener("click",e=>{const id=e.target.dataset.open;if(!id)return;const c=state.cards.find(x=>x.id===id);if(c){c.status="used";c.usedAt=new Date().toISOString();save();render()}});
+$("saveAnime").onclick=()=>{document.querySelectorAll("[data-anime]").forEach(el=>state.anime[+el.dataset.anime]=el.value.trim());state.animeConfig={enabled:$("animeRewardEnabled").checked,milestone:Number($("animeMilestone").value),episodes:Math.max(1,Math.min(10,Number($("animeEpisodes").value)||1))};save();render();alert("Anime reward settings saved.")};
+document.querySelectorAll("nav button").forEach(b=>b.onclick=()=>{document.querySelectorAll("nav button").forEach(x=>x.classList.toggle("active",x===b));document.querySelectorAll(".tabscreen").forEach(x=>x.classList.toggle("active",x.id===b.dataset.tab));});
+$("exportData").onclick=()=>{const blob=new Blob([JSON.stringify(state,null,2)],{type:"application/json"}),a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="life-rpg-backup.json";a.click();URL.revokeObjectURL(a.href)};
+$("resetDay").onclick=()=>{if(confirm("Clear today's task selections? Already issued rewards and banked XP will remain.")){if(!day().issuedMilestone)day().checked=[];save();render()}};
+render();
+if("serviceWorker" in navigator)window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js").catch(()=>{}));
+</script>
+</body></html>
